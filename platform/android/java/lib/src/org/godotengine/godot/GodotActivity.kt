@@ -48,9 +48,11 @@ import org.godotengine.godot.utils.ProcessPhoenix
  */
 abstract class GodotActivity : FragmentActivity(), GodotHost {
 
+	lateinit var game_name: String
+
 	companion object {
 		private val TAG = GodotActivity::class.java.simpleName
-
+		
 		@JvmStatic
 		protected val EXTRA_FORCE_QUIT = "force_quit_requested"
 		@JvmStatic
@@ -64,9 +66,13 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		private set
 
 	override fun onCreate(savedInstanceState: Bundle?) {
+		Log.d(TAG, "onCreate invokation start");
+	
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.godot_app_layout)
-
+		
+		game_name = intent.getStringExtra("GAME_NAME") ?: ""
+		
 		handleStartIntent(intent, true)
 
 		val currentFragment = supportFragmentManager.findFragmentById(R.id.godot_fragment_container)
@@ -78,6 +84,8 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 			godotFragment = initGodotInstance()
 			supportFragmentManager.beginTransaction().replace(R.id.godot_fragment_container, godotFragment!!).setPrimaryNavigationFragment(godotFragment).commitNowAllowingStateLoss()
 		}
+
+		Log.d(TAG, "onCreate invokation end");
 	}
 
 	override fun onDestroy() {
@@ -89,10 +97,12 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 	}
 
 	override fun onGodotForceQuit(instance: Godot) {
+		Log.d(TAG, "onGodotForceQuit Called");
 		runOnUiThread { terminateGodotInstance(instance) }
 	}
 
 	private fun terminateGodotInstance(instance: Godot) {
+		Log.d(TAG, "terminateGodotInstance Called");
 		if (godotFragment != null && instance === godotFragment!!.godot) {
 			Log.v(TAG, "Force quitting Godot instance")
 			ProcessPhoenix.forceQuit(this)
@@ -100,6 +110,7 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 	}
 
 	override fun onGodotRestartRequested(instance: Godot) {
+		Log.d(TAG, "onGodotRestartRequested");
 		runOnUiThread {
 			if (godotFragment != null && instance === godotFragment!!.godot) {
 				// It's very hard to properly de-initialize Godot on Android to restart the game
@@ -114,6 +125,7 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 	}
 
 	override fun onNewIntent(newIntent: Intent) {
+		Log.d(TAG, "onNewIntent");
 		super.onNewIntent(newIntent)
 		intent = newIntent
 
@@ -123,6 +135,7 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 	}
 
 	private fun handleStartIntent(intent: Intent, newLaunch: Boolean) {
+		Log.d(TAG, "handleStartIntent");
 		val forceQuitRequested = intent.getBooleanExtra(EXTRA_FORCE_QUIT, false)
 		if (forceQuitRequested) {
 			Log.d(TAG, "Force quit requested, terminating..")
@@ -142,12 +155,14 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 
 	@CallSuper
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+		Log.d(TAG, "onActivityResult Called");
 		super.onActivityResult(requestCode, resultCode, data)
 		godotFragment?.onActivityResult(requestCode, resultCode, data)
 	}
 
 	@CallSuper
 	override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+		Log.d(TAG, "onRequestPermissionsResult Called");
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 		godotFragment?.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
@@ -177,6 +192,7 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 	 * Used to initialize the Godot fragment instance in [onCreate].
 	 */
 	protected open fun initGodotInstance(): GodotFragment {
-		return GodotFragment()
+		Log.d(TAG, "initGodotInstance Called");
+		return GodotFragment(game_name)
 	}
 }

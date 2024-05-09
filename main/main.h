@@ -59,7 +59,7 @@ public:
 #endif
 
 	static int test_entrypoint(int argc, char *argv[], bool &tests_need_run);
-	static Error setup(const char *execpath, int argc, char *argv[], bool p_second_phase = true);
+	static Error setup(const char *execpath, const char *game_name, int argc, char *argv[], bool p_second_phase = true);
 	static Error setup2(); // The thread calling setup2() will effectively become the main thread.
 	static String get_rendering_driver_name();
 #ifdef TESTS_ENABLED

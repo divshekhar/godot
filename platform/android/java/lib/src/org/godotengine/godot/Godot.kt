@@ -77,35 +77,43 @@ import java.util.*
  * Can be hosted by [Activity], [Fragment] or [Service] android components, so long as its
  * lifecycle methods are properly invoked.
  */
-class Godot(private val context: Context) : SensorEventListener {
+class Godot(private val context: Context, private val game_name: String) : SensorEventListener {
 
 	private companion object {
 		private val TAG = Godot::class.java.simpleName
 	}
 
 	private val pluginRegistry: GodotPluginRegistry by lazy {
+		Log.d(TAG, "pluginRegistry Invokation started");
 		GodotPluginRegistry.getPluginRegistry()
 	}
 	private val mSensorManager: SensorManager by lazy {
+		Log.d(TAG, "mSensorManager Invokation started");
 		requireActivity().getSystemService(Context.SENSOR_SERVICE) as SensorManager
 	}
 	private val mAccelerometer: Sensor? by lazy {
+		Log.d(TAG, "mAccelerometer Invokation started");
 		mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 	}
 	private val mGravity: Sensor? by lazy {
+		Log.d(TAG, "mGravity Invokation started");
 		mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY)
 	}
 	private val mMagnetometer: Sensor? by lazy {
+		Log.d(TAG, "mMagnetometer Invokation started");
 		mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
 	}
 	private val mGyroscope: Sensor? by lazy {
+		Log.d(TAG, "mGyroscope Invokation started");
 		mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
 	}
 	private val mClipboard: ClipboardManager by lazy {
+		Log.d(TAG, "mClipboard Invokation started");
 		requireActivity().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
 	}
 
 	private val uiChangeListener = View.OnSystemUiVisibilityChangeListener { visibility: Int ->
+		Log.d(TAG, "uiChangeListener Invokation started");
 		if (visibility and View.SYSTEM_UI_FLAG_FULLSCREEN == 0) {
 			val decorView = requireActivity().window.decorView
 			decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
@@ -179,6 +187,9 @@ class Godot(private val context: Context) : SensorEventListener {
 	 * is invalid.
 	 */
 	fun onCreate(primaryHost: GodotHost) {
+		Log.d(TAG, "onCreate Invokation started");
+		Log.d(TAG, "primaryHost = $primaryHost");
+
 		if (this.primaryHost != null || initializationStarted) {
 			Log.d(TAG, "OnCreate already invoked")
 			return
@@ -197,6 +208,7 @@ class Godot(private val context: Context) : SensorEventListener {
 
 			// check for apk expansion API
 			commandLine = getCommandLine()
+			Log.d(TAG, "commandLine = $commandLine");
 			var mainPackMd5: String? = null
 			var mainPackKey: String? = null
 			val newArgs: MutableList<String> = ArrayList()
@@ -222,6 +234,7 @@ class Godot(private val context: Context) : SensorEventListener {
 					useApkExpansion = true
 				} else if (hasExtra && commandLine[i] == "--apk_expansion_md5") {
 					mainPackMd5 = commandLine[i + 1]
+					Log.d(TAG, "mainPackMd5 = $mainPackMd5");
 					i++
 				} else if (hasExtra && commandLine[i] == "--apk_expansion_key") {
 					mainPackKey = commandLine[i + 1]
@@ -232,6 +245,7 @@ class Godot(private val context: Context) : SensorEventListener {
 					val editor = prefs.edit()
 					editor.putString("store_public_key", mainPackKey)
 					editor.apply()
+					Log.d(TAG, "mainPackKey = $mainPackKey");
 					i++
 				} else if (commandLine[i] == "--benchmark") {
 					useBenchmark = true
@@ -255,10 +269,12 @@ class Godot(private val context: Context) : SensorEventListener {
 				// Build the full path to the app's expansion files
 				try {
 					expansionPackPath = Helpers.getSaveFilePath(context)
+					Log.d(TAG, "expansionPackPath = $expansionPackPath");
 					expansionPackPath += "/main." + activity.packageManager.getPackageInfo(
 							activity.packageName,
 							0
 					).versionCode + "." + activity.packageName + ".obb"
+					Log.d(TAG, "expansionPackPath = $expansionPackPath");
 				} catch (e: java.lang.Exception) {
 					Log.e(TAG, "Unable to build full path to the app's expansion files", e)
 				}
@@ -316,6 +332,7 @@ class Godot(private val context: Context) : SensorEventListener {
 		if (expansionPackPath.isNotEmpty()) {
 			commandLine.add("--main-pack")
 			commandLine.add(expansionPackPath)
+			Log.d(TAG, "commandLine = $commandLine");
 		}
 		val activity = requireActivity()
 		if (!nativeLayerInitializeCompleted) {
@@ -332,7 +349,9 @@ class Godot(private val context: Context) : SensorEventListener {
 		}
 
 		if (nativeLayerInitializeCompleted && !nativeLayerSetupCompleted) {
-			nativeLayerSetupCompleted = GodotLib.setup(commandLine.toTypedArray(), tts)
+			Log.d(TAG, "GodotLib.setup Called with");
+			Log.d(TAG, "commandLine.toTypedArray() = ${commandLine.toTypedArray()}");
+			nativeLayerSetupCompleted = GodotLib.setup(commandLine.toTypedArray(), game_name, tts)
 			if (!nativeLayerSetupCompleted) {
 				Log.e(TAG, "Unable to setup the Godot engine! Aborting...")
 				alert(R.string.error_engine_setup_message, R.string.text_error_title, this::forceQuit)

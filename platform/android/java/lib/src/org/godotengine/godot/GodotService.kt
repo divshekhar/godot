@@ -11,7 +11,7 @@ import android.util.Log
  *
  * Note: Still in development, so it's made private and inaccessible until completed.
  */
-private class GodotService : Service() {
+private class GodotService(private val game_name: String) : Service() {
 
 	companion object {
 		private val TAG = GodotService::class.java.simpleName
@@ -19,7 +19,7 @@ private class GodotService : Service() {
 
 	private var boundIntent: Intent? = null
 	private val godot by lazy {
-		Godot(applicationContext)
+		Godot(applicationContext, game_name)
 	}
 
 	override fun onCreate() {

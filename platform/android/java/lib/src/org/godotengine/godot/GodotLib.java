@@ -40,6 +40,7 @@ import android.app.Activity;
 import android.content.res.AssetManager;
 import android.hardware.SensorEvent;
 import android.view.Surface;
+import android.util.Log;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -48,6 +49,7 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class GodotLib {
 	static {
+		Log.d("GodotLib", "Loading libgodot_android.so file");
 		System.loadLibrary("godot_android");
 	}
 
@@ -73,7 +75,7 @@ public class GodotLib {
 	 * Invoked on the GL thread to complete setup for the Godot native layer logic.
 	 * @param p_cmdline Command line arguments used to configure Godot native layer components.
 	 */
-	public static native boolean setup(String[] p_cmdline, GodotTTS tts);
+	public static native boolean setup(String[] p_cmdline, String game_name, GodotTTS tts);
 
 	/**
 	 * Invoked on the GL thread when the underlying Android surface has changed size.

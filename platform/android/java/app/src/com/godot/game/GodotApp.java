@@ -33,6 +33,7 @@ package com.godot.game;
 import org.godotengine.godot.GodotActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 
 /**
  * Template activity for Godot Android builds.
@@ -41,7 +42,9 @@ import android.os.Bundle;
 public class GodotApp extends GodotActivity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		Log.d("[GodotApp]", "OnCreate invokation start");
 		setTheme(R.style.GodotAppMainTheme);
 		super.onCreate(savedInstanceState);
+		Log.d("[GodotApp]", "OnCreate invokation end");
 	}
 }

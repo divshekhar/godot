@@ -37,6 +37,7 @@ import android.app.Activity;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import android.util.Log;
 
 /**
  * Denotate a component (e.g: Activity, Fragment) that hosts the {@link Godot} engine.
@@ -46,6 +47,7 @@ public interface GodotHost {
 	 * Provides a set of command line parameters to setup the {@link Godot} engine.
 	 */
 	default List<String> getCommandLine() {
+		Log.d("GodotHost", "getCommandLine Invokation started");
 		return Collections.emptyList();
 	}
 

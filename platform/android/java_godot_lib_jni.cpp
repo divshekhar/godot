@@ -142,7 +142,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env
 	_terminate(env, false);
 }
 
-JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jclass clazz, jobjectArray p_cmdline, jobject p_godot_tts) {
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jclass clazz, jobjectArray p_cmdline, jstring game_name, jobject p_godot_tts) {
+	vformat("JNICALL GodotLib_setup Called with = %s", p_cmdline);
 	setup_android_thread();
 
 	const char **cmdline = nullptr;
@@ -150,6 +151,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env
 	int cmdlen = 0;
 	if (p_cmdline) {
 		cmdlen = env->GetArrayLength(p_cmdline);
+		vformat("JNICALL GodotLib_setup cmdlen before if = %s", cmdline);
 		if (cmdlen) {
 			cmdline = (const char **)memalloc((cmdlen + 1) * sizeof(const char *));
 			ERR_FAIL_NULL_V_MSG(cmdline, false, "Out of memory.");
@@ -167,7 +169,11 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env
 		}
 	}
 
-	Error err = Main::setup(OS_Android::ANDROID_EXEC_PATH, cmdlen, (char **)cmdline, false);
+	print_line(vformat("JNICALL GodotLib_setup cmdlen after if block = %s", cmdline));
+	print_line("Get Ready");
+	print_line(vformat("JNICALL GodotLib_setup Main::setup calling with %s, %s, %s", OS_Android::ANDROID_EXEC_PATH, cmdlen, (char **)cmdline));
+	print_line("JNICALL GodotLib_setup game_name = ", env->GetStringUTFChars(game_name, nullptr));
+	Error err = Main::setup(OS_Android::ANDROID_EXEC_PATH, env->GetStringUTFChars(game_name, nullptr), cmdlen, (char **)cmdline, false);
 	if (cmdline) {
 		if (j_cmdline) {
 			for (int i = 0; i < cmdlen; ++i) {

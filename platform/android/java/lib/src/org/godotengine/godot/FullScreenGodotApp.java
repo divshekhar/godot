@@ -36,4 +36,4 @@ package org.godotengine.godot;
  * @deprecated Use {@link GodotActivity}
  */
 @Deprecated
-public abstract class FullScreenGodotApp extends GodotActivity {}
+public abstract class FullScreenGodotApp {}

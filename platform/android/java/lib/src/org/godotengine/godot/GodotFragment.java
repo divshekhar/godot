@@ -98,7 +98,14 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 
 	static private Intent mCurrentIntent;
 
+	private String game_name;
+
+	public GodotFragment(String game_name) {
+		this.game_name = game_name;
+	}
+
 	public void onNewIntent(Intent intent) {
+		Log.d(TAG, "onNewIntent Called");
 		mCurrentIntent = intent;
 	}
 
@@ -131,6 +138,7 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 
 	@Override
 	public void onAttach(@NonNull Context context) {
+		Log.d(TAG, "onAttach Called");
 		super.onAttach(context);
 		if (getParentFragment() instanceof GodotHost) {
 			parentHost = (GodotHost)getParentFragment();
@@ -141,6 +149,7 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 
 	@Override
 	public void onDetach() {
+		Log.d(TAG, "onDetach Called");
 		super.onDetach();
 		parentHost = null;
 	}
@@ -172,18 +181,23 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 
 	@Override
 	public void onCreate(Bundle icicle) {
+		Log.d(TAG, "onCreate Invokation start");
 		BenchmarkUtils.beginBenchmarkMeasure("GodotFragment::onCreate");
 		super.onCreate(icicle);
 
 		final Activity activity = getActivity();
 		mCurrentIntent = activity.getIntent();
 
-		godot = new Godot(requireContext());
+		Log.d(TAG, "Godot Initialization started");
+		godot = new Godot(requireContext(), game_name);
+		Log.d(TAG, "Godot Initialization ended and performEngineInitialization");
 		performEngineInitialization();
 		BenchmarkUtils.endBenchmarkMeasure("GodotFragment::onCreate");
+		Log.d(TAG, "onCreate Invokation end");
 	}
 
 	private void performEngineInitialization() {
+		Log.d(TAG, "performEngineInitialization Invokation started");
 		try {
 			godot.onCreate(this);
 
@@ -226,10 +240,12 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 				Log.e(TAG, "Unable to start download service", e);
 			}
 		}
+		Log.d(TAG, "performEngineInitialization Invokation ended");
 	}
 
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle icicle) {
+		Log.d(TAG, "onCreateView Invokation started");
 		if (mDownloaderClientStub != null) {
 			View downloadingExpansionView =
 					inflater.inflate(R.layout.downloading_expansion, container, false);
@@ -252,12 +268,14 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 
 	@Override
 	public void onDestroy() {
+		Log.d(TAG, "onDestroy Invokation started");
 		godot.onDestroy(this);
 		super.onDestroy();
 	}
 
 	@Override
 	public void onPause() {
+		Log.d(TAG, "onPause Invokation started");
 		super.onPause();
 
 		if (!godot.isInitialized()) {
@@ -272,6 +290,7 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 
 	@Override
 	public void onResume() {
+		Log.d(TAG, "onResume Invokation started");
 		super.onResume();
 		if (!godot.isInitialized()) {
 			if (null != mDownloaderClientStub) {
@@ -284,6 +303,7 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 	}
 
 	public void onBackPressed() {
+		Log.d(TAG, "onBackPressed Invokation started");
 		godot.onBackPressed(this);
 	}
 
@@ -294,6 +314,7 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 	 */
 	@Override
 	public void onDownloadStateChanged(int newState) {
+		Log.d(TAG, "onDownloadStateChanged Invokation started");
 		setState(newState);
 		boolean showDashboard = true;
 		boolean showCellMessage = false;
@@ -369,6 +390,7 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 
 	@Override
 	public void onDownloadProgress(DownloadProgressInfo progress) {
+		Log.d(TAG, "onDownloadProgress Invokation started");
 		mAverageSpeed.setText(getString(R.string.kilobytes_per_second,
 				Helpers.getSpeedString(progress.mCurrentSpeed)));
 		mTimeRemaining.setText(getString(R.string.time_remaining,

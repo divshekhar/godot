@@ -757,7 +757,8 @@ int Main::test_entrypoint(int argc, char *argv[], bool &tests_need_run) {
  *   in help, it's a bit messy and should be globalized with the setup() parsing somehow.
  */
 
-Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_phase) {
+Error Main::setup(const char *execpath, const char *game_name, int argc, char *argv[], bool p_second_phase) {
+	print_line(vformat("Main::setup with = %s, %s, %s, %s", execpath, argc, argv, p_second_phase));
 	Thread::make_main_thread();
 	set_current_thread_safe_for_nodes(true);
 
@@ -804,11 +805,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// Add command line arguments.
 	for (int i = 0; i < argc; i++) {
+		print_line(vformat("argv = %s", String::utf8(argv[i])));
 		args.push_back(String::utf8(argv[i]));
 	}
 
 	// Add arguments received from macOS LaunchService (URL schemas, file associations).
 	for (const String &arg : platform_args) {
+		print_line(vformat("Platform_args = %s", arg));
 		args.push_back(arg);
 	}
 
@@ -845,6 +848,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	if (!packed_data) {
 		packed_data = memnew(PackedData);
 	}
+	print_line(vformat("Main::setup packed_data = %s", packed_data));
 
 #ifdef MINIZIP_ENABLED
 
@@ -1437,6 +1441,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 
 		} else if (I->get() == "--main-pack") {
+			print_line(vformat("Main::setup I->next() = %s", I->next()));
 			if (I->next()) {
 				main_pack = I->next()->get();
 				N = I->next()->next();
@@ -1596,7 +1601,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
-	if (globals->setup(project_path, main_pack, upwards, editor) == OK) {
+	print_line(vformat("Main::setup calling globals->setup with = %s, %s, %s, %s", project_path, main_pack, upwards, editor));
+	if (globals->setup(project_path, game_name, main_pack, upwards, editor) == OK) {
 #ifdef TOOLS_ENABLED
 		found_project = true;
 #endif

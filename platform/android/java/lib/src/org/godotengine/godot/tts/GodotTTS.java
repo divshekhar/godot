@@ -44,6 +44,7 @@ import androidx.annotation.Keep;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Set;
+import android.util.Log;
 
 /**
  * Wrapper for Android Text to Speech API and custom utterance query implementation.
@@ -73,6 +74,7 @@ public class GodotTTS extends UtteranceProgressListener {
 	private boolean paused;
 
 	public GodotTTS(Context context) {
+		Log.d("GodotTTS", "GodotTTS Constructor started");
 		this.context = context;
 	}
 

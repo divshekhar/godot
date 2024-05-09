@@ -143,7 +143,7 @@ protected:
 
 	void _add_property_info_bind(const Dictionary &p_info);
 
-	Error _setup(const String &p_path, const String &p_main_pack, bool p_upwards = false, bool p_ignore_override = false);
+	Error _setup(const String &p_path, const String &game_name, const String &p_main_pack, bool p_upwards = false, bool p_ignore_override = false);
 
 	void _add_builtin_input_map();
 
@@ -174,6 +174,7 @@ public:
 	String get_project_data_dir_name() const;
 	String get_project_data_path() const;
 	String get_resource_path() const;
+	void set_resource_path(String res_name);
 	String get_imported_files_path() const;
 
 	static ProjectSettings *get_singleton();
@@ -184,7 +185,7 @@ public:
 	void set_builtin_order(const String &p_name);
 	bool is_builtin_setting(const String &p_name) const;
 
-	Error setup(const String &p_path, const String &p_main_pack, bool p_upwards = false, bool p_ignore_override = false);
+	Error setup(const String &p_path, const String &game_name, const String &p_main_pack, bool p_upwards = false, bool p_ignore_override = false);
 
 	Error load_custom(const String &p_path);
 	Error save_custom(const String &p_path = "", const CustomMap &p_custom = CustomMap(), const Vector<String> &p_custom_features = Vector<String>(), bool p_merge_with_current = true);

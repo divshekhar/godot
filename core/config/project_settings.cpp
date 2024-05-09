@@ -64,7 +64,13 @@ String ProjectSettings::get_project_data_path() const {
 }
 
 String ProjectSettings::get_resource_path() const {
+	print_line("ProjectSettings::get_resource_path called returning resource_path = ", resource_path);
 	return resource_path;
+}
+
+void ProjectSettings::set_resource_path(String res_name) {
+	print_line("ProjectSettings::set_resource_path called resource_path = ", res_name);
+	resource_path = resource_path.path_join(res_name);
 }
 
 String ProjectSettings::get_imported_files_path() const {
@@ -459,6 +465,7 @@ void ProjectSettings::_emit_changed() {
 }
 
 bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset) {
+	print_line("ProjectSettings::setup _load_resource_pack = ", p_pack, p_replace_files, p_offset);
 	if (PackedData::get_singleton()->is_disabled()) {
 		return false;
 	}
@@ -517,19 +524,25 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
  *    If a project file is found, load it or fail.
  *    If nothing was found, error out.
  */
-Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
+Error ProjectSettings::_setup(const String &p_path, const String &game_name, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
+	print_line(vformat("ProjectSettings::setup _setup Called with = %s, %s, %s, %s", p_path, p_main_pack, p_upwards, p_ignore_override));
+	print_line(vformat("ProjectSettings::setup _setup resource_dir = %s", OS::get_singleton()->get_resource_dir()));
+	print_line(vformat("ProjectSettings::setup _setup resource_dir is empty = %s", OS::get_singleton()->get_resource_dir().is_empty()));
 	if (!OS::get_singleton()->get_resource_dir().is_empty()) {
 		// OS will call ProjectSettings->get_resource_path which will be empty if not overridden!
 		// If the OS would rather use a specific location, then it will not be empty.
 		resource_path = OS::get_singleton()->get_resource_dir().replace("\\", "/");
+		print_line(vformat("ProjectSettings::setup _setup resource_path = %s", resource_path));
 		if (!resource_path.is_empty() && resource_path[resource_path.length() - 1] == '/') {
 			resource_path = resource_path.substr(0, resource_path.length() - 1); // Chop end.
 		}
+		print_line(vformat("ProjectSettings::setup _setup resource_path after substr = %s", resource_path));
 	}
 
 	// Attempt with a user-defined main pack first
 
 	if (!p_main_pack.is_empty()) {
+		print_line(vformat("ProjectSettings::setup _setup _load_resource_pack with path = %s", p_main_pack));
 		bool ok = _load_resource_pack(p_main_pack);
 		ERR_FAIL_COND_V_MSG(!ok, ERR_CANT_OPEN, "Cannot open resource pack '" + p_main_pack + "'.");
 
@@ -543,7 +556,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	}
 
 	String exec_path = OS::get_singleton()->get_executable_path();
-
+	print_line(vformat("ProjectSettings::setup _setup exec_path = %s", exec_path));
 	if (!exec_path.is_empty()) {
 		// We do several tests sequentially until one succeeds to find a PCK,
 		// and if so, we attempt loading it at the end.
@@ -556,6 +569,9 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		String exec_dir = exec_path.get_base_dir();
 		String exec_filename = exec_path.get_file();
 		String exec_basename = exec_filename.get_basename();
+		print_line(vformat("ProjectSettings::setup _setup exec_dir = %s", exec_dir));
+		print_line(vformat("ProjectSettings::setup _setup exec_filename = %s", exec_filename));
+		print_line(vformat("ProjectSettings::setup _setup exec_basename = %s", exec_basename));
 
 		// Based on the OS, it can be the exec path + '.pck' (Linux w/o extension, macOS in .app bundle)
 		// or the exec path's basename + '.pck' (Windows).
@@ -590,37 +606,49 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 				_load_settings_text("res://override.cfg");
 				_load_settings_text(exec_path.get_base_dir().path_join("override.cfg"));
 			}
+			print_line("Returning result from _load_settings_text_or_binary");
 			return err;
 		}
 	}
 
 	// Try to use the filesystem for files, according to OS.
 	// (Only Android -when reading from pck- and iOS use this.)
-
+	set_resource_path(game_name);
+	print_line(vformat("ProjectSettings::setup _setup android resource_dir = %s", OS::get_singleton()->get_resource_dir()));
+	print_line(vformat("ProjectSettings::setup _setup android resource_dir is empty = %s", OS::get_singleton()->get_resource_dir().is_empty()));
 	if (!OS::get_singleton()->get_resource_dir().is_empty()) {
+		print_line("ProjectSettings::setup _setup android _load_settings_text_or_binary");
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
 		if (err == OK && !p_ignore_override) {
+			print_line("ProjectSettings::setup _setup android _load_settings_text");
 			// Optional, we don't mind if it fails.
 			_load_settings_text("res://override.cfg");
 		}
 		return err;
 	}
 
+	print_line("After android block");
+
 	// Nothing was found, try to find a project file in provided path (`p_path`)
 	// or, if requested (`p_upwards`) in parent directories.
 
-	Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	Ref<DirAccess>
+			d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	ERR_FAIL_COND_V_MSG(d.is_null(), ERR_CANT_CREATE, "Cannot create DirAccess for path '" + p_path + "'.");
 	d->change_dir(p_path);
+	print_line(vformat("ProjectSettings::setup _setup p_path = %s", p_path));
 
 	String current_dir = d->get_current_dir();
+	print_line(vformat("ProjectSettings::setup _setup current_dir = %s", current_dir));
 	bool found = false;
 	Error err;
 
 	while (true) {
 		// Set the resource path early so things can be resolved when loading.
 		resource_path = current_dir;
+		print_line(vformat("ProjectSettings::setup _setup resource_path = current_dir = %s", resource_path));
 		resource_path = resource_path.replace("\\", "/"); // Windows path to Unix path just in case.
+		print_line("ProjectSettings::setup _setup resource_path after replacement of // = ", resource_path);
 		err = _load_settings_text_or_binary(current_dir.path_join("project.godot"), current_dir.path_join("project.binary"));
 		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails.
@@ -652,11 +680,15 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	return OK;
 }
 
-Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
-	Error err = _setup(p_path, p_main_pack, p_upwards, p_ignore_override);
+Error ProjectSettings::setup(const String &p_path, const String &game_name, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
+	print_line(vformat("ProjectSettings::setup called with: %s, %s, %s, %s", p_path, p_main_pack, p_upwards, p_ignore_override));
+	print_line("ProjectSettings::setup _setup called");
+	Error err = _setup(p_path, game_name, p_main_pack, p_upwards, p_ignore_override);
+	print_line("ProjectSettings::setup _setup complete err = ", err);
 	if (err == OK && !p_ignore_override) {
 		String custom_settings = GLOBAL_GET("application/config/project_settings_override");
 		if (!custom_settings.is_empty()) {
+			print_line("ProjectSettings::setup _setup loading custom_settings = ", custom_settings);
 			_load_settings_text(custom_settings);
 		}
 	}
@@ -664,6 +696,7 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 	// Updating the default value after the project settings have loaded.
 	bool use_hidden_directory = GLOBAL_GET("application/config/use_hidden_project_data_directory");
 	project_data_dir_name = (use_hidden_directory ? "." : "") + PROJECT_DATA_DIR_NAME_SUFFIX;
+	print_line("ProjectSettings::setup project_data_dir_name = ", project_data_dir_name);
 
 	// Using GLOBAL_GET on every block for compressing can be slow, so assigning here.
 	Compression::zstd_long_distance_matching = GLOBAL_GET("compression/formats/zstd/long_distance_matching");
@@ -675,6 +708,8 @@ Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bo
 	Compression::gzip_level = GLOBAL_GET("compression/formats/gzip/compression_level");
 
 	project_loaded = err == OK;
+	print_line("ProjectSettings::setup project_loaded = ", project_loaded);
+	print_line("ProjectSettings::setup returning err = ", err);
 	return err;
 }
 
@@ -685,11 +720,16 @@ bool ProjectSettings::has_setting(String p_var) const {
 }
 
 Error ProjectSettings::_load_settings_binary(const String &p_path) {
+	print_line("ProjectSettings::setup _load_settings_binary = ", p_path);
+
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 	if (err != OK) {
+		print_line("ProjectSettings::_load_settings_binary p_path File not found");
 		return err;
 	}
+
+	print_line("ProjectSettings::setup _load_settings_binary f = ", f);
 
 	uint8_t hdr[4];
 	f->get_buffer(hdr, 4);
@@ -720,12 +760,15 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 }
 
 Error ProjectSettings::_load_settings_text(const String &p_path) {
+	print_line(vformat("ProjectSettings::setup _load_settings_text = %s", p_path));
+
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 
 	if (f.is_null()) {
 		// FIXME: Above 'err' error code is ERR_FILE_CANT_OPEN if the file is missing
 		// This needs to be streamlined if we want decent error reporting
+		print_line("ProjectSettings::_load_settings_text p_path File not found");
 		return ERR_FILE_NOT_FOUND;
 	}
 
@@ -751,6 +794,9 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 			// If we're loading a project.godot from source code, we can operate some
 			// ProjectSettings conversions if need be.
 			_convert_to_last_version(config_version);
+			print_line("ProjectSettings::_load_settings_text with p_path = ", p_path);
+			print_line("get_resource_path = ", get_resource_path());
+			print_line("get_resource_path joined with project.godot = ", get_resource_path().path_join("project.godot"));
 			last_save_time = FileAccess::get_modified_time(get_resource_path().path_join("project.godot"));
 			return OK;
 		}
@@ -774,9 +820,14 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 }
 
 Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, const String &p_bin_path) {
+	print_line(vformat("ProjectSettings::setup _load_settings_text_or_binary = %s, %s", p_text_path, p_bin_path));
+
 	// Attempt first to load the binary project.godot file.
+	print_line("ProjectSettings::setup calling _load_settings_binary");
+
 	Error err = _load_settings_binary(p_bin_path);
 	if (err == OK) {
+		print_line("ProjectSettings::setup _load_settings_binary returned OK");
 		return OK;
 	} else if (err != ERR_FILE_NOT_FOUND) {
 		// If the file exists but can't be loaded, we want to know it.
@@ -784,6 +835,8 @@ Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, 
 	}
 
 	// Fallback to text-based project.godot file if binary was not found.
+	print_line("ProjectSettings::setup calling _load_settings_text");
+
 	err = _load_settings_text(p_text_path);
 	if (err == OK) {
 		return OK;
