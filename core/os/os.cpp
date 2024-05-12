@@ -293,6 +293,12 @@ String OS::get_resource_dir() const {
 	return ProjectSettings::get_singleton()->get_resource_path();
 }
 
+// Access internal shared storage dirs like /tmp, /var/tmp, etc.
+// For example: /tmp on Unix, %TEMP% on Windows, /data/user/0/<package_name>/files on Android, etc
+String OS::get_internal_storage_dir() const {
+	return ".";
+}
+
 // Access system-specific dirs like Documents, Downloads, etc.
 String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ".";

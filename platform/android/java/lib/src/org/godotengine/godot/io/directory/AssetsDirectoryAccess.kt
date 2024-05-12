@@ -49,6 +49,7 @@ internal class AssetsDirectoryAccess(context: Context) : DirectoryAccessHandler.
 
 	private data class AssetDir(val path: String, val files: Array<String>, var current: Int = 0)
 
+	// TODO:Android: Remove AAssetManager
 	private val assetManager = context.assets
 
 	private var lastDirId = STARTING_DIR_ID
@@ -66,6 +67,7 @@ internal class AssetsDirectoryAccess(context: Context) : DirectoryAccessHandler.
 	override fun dirOpen(path: String): Int {
 		val assetsPath = getAssetsPath(path)
 		try {
+			// TODO:Android: Remove AAssetManager
 			val files = assetManager.list(assetsPath) ?: return INVALID_DIR_ID
 			// Empty directories don't get added to the 'assets' directory, so
 			// if ad.files.length > 0 ==> path is directory
@@ -87,6 +89,7 @@ internal class AssetsDirectoryAccess(context: Context) : DirectoryAccessHandler.
 	override fun dirExists(path: String): Boolean {
 		val assetsPath = getAssetsPath(path)
 		try {
+			// TODO:Android: Remove AAssetManager
 			val files = assetManager.list(assetsPath) ?: return false
 			// Empty directories don't get added to the 'assets' directory, so
 			// if ad.files.length > 0 ==> path is directory
@@ -101,6 +104,7 @@ internal class AssetsDirectoryAccess(context: Context) : DirectoryAccessHandler.
 	override fun fileExists(path: String): Boolean {
 		val assetsPath = getAssetsPath(path)
 		try {
+			// TODO:Android: Remove AAssetManager
 			val files = assetManager.list(assetsPath) ?: return false
 			// Empty directories don't get added to the 'assets' directory, so
 			// if ad.files.length > 0 ==> path is directory
@@ -128,6 +132,7 @@ internal class AssetsDirectoryAccess(context: Context) : DirectoryAccessHandler.
 		// List the contents of $fileName. If it's a file, it will be empty, otherwise it'll be a
 		// directory
 		val filePath = if (ad.path == "") fileName else "${ad.path}/${fileName}"
+		// TODO:Android: Remove AAssetManager
 		val fileContents = assetManager.list(filePath)
 		return (fileContents?.size?: 0) > 0
 	}

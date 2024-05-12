@@ -55,6 +55,7 @@
 #include "editor/editor_settings.h"
 #endif
 
+// TODO:Android Remove AssetManager
 #include <android/asset_manager_jni.h>
 #include <android/input.h>
 #include <android/native_window_jni.h>
@@ -125,8 +126,10 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv
 
 	init_thread_jandroid(jvm, env);
 
+	// TODO:Android Remove AssetManager
 	jobject amgr = env->NewGlobalRef(p_asset_manager);
 
+	// TODO:Android Remove AssetManager
 	FileAccessAndroid::asset_manager = AAssetManager_fromJava(env, amgr);
 
 	DirAccessJAndroid::setup(p_directory_access_handler);

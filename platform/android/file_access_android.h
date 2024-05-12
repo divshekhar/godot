@@ -33,11 +33,13 @@
 
 #include "core/io/file_access.h"
 
+// TODO:Android Remove AssetManager
 #include <android/asset_manager.h>
 #include <android/log.h>
 #include <stdio.h>
 
 class FileAccessAndroid : public FileAccess {
+	// TODO:Android Remove AssetManager
 	mutable AAsset *asset = nullptr;
 	mutable uint64_t len = 0;
 	mutable uint64_t pos = 0;
@@ -48,6 +50,7 @@ class FileAccessAndroid : public FileAccess {
 	void _close();
 
 public:
+	// TODO:Android Remove AssetManager
 	static AAssetManager *asset_manager;
 
 	virtual Error open_internal(const String &p_path, int p_mode_flags) override; // open a file

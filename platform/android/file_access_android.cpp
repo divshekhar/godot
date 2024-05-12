@@ -32,6 +32,7 @@
 
 #include "core/string/print_string.h"
 
+// TODO:Android: Remove AAssetManager
 AAssetManager *FileAccessAndroid::asset_manager = nullptr;
 
 String FileAccessAndroid::get_path() const {
@@ -55,10 +56,12 @@ Error FileAccessAndroid::open_internal(const String &p_path, int p_mode_flags) {
 	}
 
 	ERR_FAIL_COND_V(p_mode_flags & FileAccess::WRITE, ERR_UNAVAILABLE); //can't write on android..
+	// TODO:Android: Remove AAssetManager
 	asset = AAssetManager_open(asset_manager, path.utf8().get_data(), AASSET_MODE_STREAMING);
 	if (!asset) {
 		return ERR_CANT_OPEN;
 	}
+	// TODO:Android: Remove AAssetManager
 	len = AAsset_getLength(asset);
 	pos = 0;
 	eof = false;
@@ -70,6 +73,7 @@ void FileAccessAndroid::_close() {
 	if (!asset) {
 		return;
 	}
+	// TODO:Android Remove AssetManager
 	AAsset_close(asset);
 	asset = nullptr;
 }
@@ -81,6 +85,7 @@ bool FileAccessAndroid::is_open() const {
 void FileAccessAndroid::seek(uint64_t p_position) {
 	ERR_FAIL_NULL(asset);
 
+	// TODO:Android: Remove AAssetManager
 	AAsset_seek(asset, p_position, SEEK_SET);
 	pos = p_position;
 	if (pos > len) {
@@ -93,6 +98,7 @@ void FileAccessAndroid::seek(uint64_t p_position) {
 
 void FileAccessAndroid::seek_end(int64_t p_position) {
 	ERR_FAIL_NULL(asset);
+	// TODO:Android: Remove AAssetManager
 	AAsset_seek(asset, p_position, SEEK_END);
 	pos = len + p_position;
 }
@@ -116,6 +122,7 @@ uint8_t FileAccessAndroid::get_8() const {
 	}
 
 	uint8_t byte;
+	// TODO:Android: Remove AAssetManager
 	AAsset_read(asset, &byte, 1);
 	pos++;
 	return byte;
@@ -124,6 +131,7 @@ uint8_t FileAccessAndroid::get_8() const {
 uint64_t FileAccessAndroid::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 
+	// TODO:Android: Remove AAssetManager
 	int r = AAsset_read(asset, p_dst, p_length);
 
 	if (pos + p_length > len) {
@@ -159,12 +167,14 @@ bool FileAccessAndroid::file_exists(const String &p_path) {
 		path = path.substr(6, path.length());
 	}
 
+	// TODO:Android: Remove AAssetManager
 	AAsset *at = AAssetManager_open(asset_manager, path.utf8().get_data(), AASSET_MODE_STREAMING);
 
 	if (!at) {
 		return false;
 	}
 
+	// TODO:Android: Remove AAssetManager
 	AAsset_close(at);
 	return true;
 }

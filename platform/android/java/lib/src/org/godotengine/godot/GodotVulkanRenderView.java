@@ -35,6 +35,7 @@ import org.godotengine.godot.vulkan.VkRenderer;
 import org.godotengine.godot.vulkan.VkSurfaceView;
 
 import android.annotation.SuppressLint;
+// TODO:Android: Remove AAssetManager
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -174,6 +175,7 @@ public class GodotVulkanRenderView extends VkSurfaceView implements GodotRenderV
 						bitmap = BitmapFactory.decodeFile(imagePath);
 					} else if (godot.getDirectoryAccessHandler().assetsFileExists(imagePath)) {
 						// Try to load the bitmap from the assets directory
+						// TODO:Android: Remove AAssetManager
 						AssetManager am = getContext().getAssets();
 						InputStream imageInputStream = am.open(imagePath);
 						bitmap = BitmapFactory.decodeStream(imageInputStream);

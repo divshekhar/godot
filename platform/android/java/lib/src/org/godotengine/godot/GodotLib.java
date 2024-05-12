@@ -37,6 +37,7 @@ import org.godotengine.godot.tts.GodotTTS;
 import org.godotengine.godot.utils.GodotNetUtils;
 
 import android.app.Activity;
+// TODO:Android: Remove AAssetManager
 import android.content.res.AssetManager;
 import android.hardware.SensorEvent;
 import android.view.Surface;
@@ -56,6 +57,7 @@ public class GodotLib {
 	 */
 	public static native boolean initialize(Activity activity,
 			Godot p_instance,
+			// TODO:Android: Remove AAssetManager
 			AssetManager p_asset_manager,
 			GodotIO godotIO,
 			GodotNetUtils netUtils,
