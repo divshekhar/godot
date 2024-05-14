@@ -137,8 +137,8 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv
 
 	// Call a method from ext_asset_manager from java
 	jclass ext_asset_manager_class = env->GetObjectClass(ext_asset_manager);
-	jmethodID method_id = env->GetMethodID(ext_asset_manager_class, "hello", "()");
-	env->CallObjectMethod(ext_asset_manager, method_id);
+	jmethodID method_id = env->GetMethodID(ext_asset_manager_class, "hello", "()V");
+	env->CallVoidMethod(ext_asset_manager, method_id);
 
 	DirAccessJAndroid::setup(p_directory_access_handler);
 	FileAccessFilesystemJAndroid::setup(p_file_access_handler);
