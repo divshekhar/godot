@@ -12,6 +12,7 @@ android_files = [
     "tts_android.cpp",
     "thread_jandroid.cpp",
     "net_socket_android.cpp",
+    "external_asset_manager.cpp",
     "java_godot_lib_jni.cpp",
     "java_class_wrapper.cpp",
     "java_godot_wrapper.cpp",

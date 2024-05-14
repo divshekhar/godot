@@ -57,8 +57,9 @@ public class GodotLib {
 	 */
 	public static native boolean initialize(Activity activity,
 			Godot p_instance,
-			// TODO:Android: Remove AAssetManager
-			AssetManager p_asset_manager,
+			// Android: Removed AAssetManager
+			// AssetManager p_asset_manager,
+			ExternalAssetManager ext_asset_manager,
 			GodotIO godotIO,
 			GodotNetUtils netUtils,
 			DirectoryAccessHandler directoryAccessHandler,
@@ -67,27 +68,35 @@ public class GodotLib {
 
 	/**
 	 * Invoked on the main thread to clean up Godot native layer.
+	 * 
 	 * @see androidx.fragment.app.Fragment#onDestroy()
 	 */
 	public static native void ondestroy();
 
 	/**
 	 * Invoked on the GL thread to complete setup for the Godot native layer logic.
-	 * @param p_cmdline Command line arguments used to configure Godot native layer components.
+	 * 
+	 * @param p_cmdline Command line arguments used to configure Godot native layer
+	 *                  components.
 	 */
 	public static native boolean setup(String[] p_cmdline, GodotTTS tts);
 
 	/**
-	 * Invoked on the GL thread when the underlying Android surface has changed size.
+	 * Invoked on the GL thread when the underlying Android surface has changed
+	 * size.
+	 * 
 	 * @param p_surface
 	 * @param p_width
 	 * @param p_height
-	 * @see org.godotengine.godot.gl.GLSurfaceView.Renderer#onSurfaceChanged(GL10, int, int)
+	 * @see org.godotengine.godot.gl.GLSurfaceView.Renderer#onSurfaceChanged(GL10,
+	 *      int, int)
 	 */
 	public static native void resize(Surface p_surface, int p_width, int p_height);
 
 	/**
-	 * Invoked on the render thread when the underlying Android surface is created or recreated.
+	 * Invoked on the render thread when the underlying Android surface is created
+	 * or recreated.
+	 * 
 	 * @param p_surface
 	 */
 	public static native void newcontext(Surface p_surface);
@@ -99,6 +108,7 @@ public class GodotLib {
 
 	/**
 	 * Invoked on the GL thread to draw the current frame.
+	 * 
 	 * @see org.godotengine.godot.gl.GLSurfaceView.Renderer#onDrawFrame(GL10)
 	 */
 	public static native boolean step();
@@ -111,12 +121,14 @@ public class GodotLib {
 	/**
 	 * Forward touch events.
 	 */
-	public static native void dispatchTouchEvent(int event, int pointer, int pointerCount, float[] positions, boolean doubleTap);
+	public static native void dispatchTouchEvent(int event, int pointer, int pointerCount, float[] positions,
+			boolean doubleTap);
 
 	/**
 	 * Dispatch mouse events
 	 */
-	public static native void dispatchMouseEvent(int event, int buttonMask, float x, float y, float deltaX, float deltaY, boolean doubleClick, boolean sourceMouseRelative, float pressure, float tiltX, float tiltY);
+	public static native void dispatchMouseEvent(int event, int buttonMask, float x, float y, float deltaX,
+			float deltaY, boolean doubleClick, boolean sourceMouseRelative, float pressure, float tiltX, float tiltY);
 
 	public static native void magnify(float x, float y, float factor);
 
@@ -124,24 +136,28 @@ public class GodotLib {
 
 	/**
 	 * Forward accelerometer sensor events.
+	 * 
 	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
 	 */
 	public static native void accelerometer(float x, float y, float z);
 
 	/**
 	 * Forward gravity sensor events.
+	 * 
 	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
 	 */
 	public static native void gravity(float x, float y, float z);
 
 	/**
 	 * Forward magnetometer sensor events.
+	 * 
 	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
 	 */
 	public static native void magnetometer(float x, float y, float z);
 
 	/**
 	 * Forward gyroscope sensor events.
+	 * 
 	 * @see android.hardware.SensorEventListener#onSensorChanged(SensorEvent)
 	 */
 	public static native void gyroscope(float x, float y, float z);
@@ -149,7 +165,8 @@ public class GodotLib {
 	/**
 	 * Forward regular key events.
 	 */
-	public static native void key(int p_physical_keycode, int p_unicode, int p_key_label, boolean p_pressed, boolean p_echo);
+	public static native void key(int p_physical_keycode, int p_unicode, int p_key_label, boolean p_pressed,
+			boolean p_echo);
 
 	/**
 	 * Forward game device's key events.
@@ -173,18 +190,21 @@ public class GodotLib {
 
 	/**
 	 * Invoked when the Android app resumes.
+	 * 
 	 * @see androidx.fragment.app.Fragment#onResume()
 	 */
 	public static native void focusin();
 
 	/**
 	 * Invoked when the Android app pauses.
+	 * 
 	 * @see androidx.fragment.app.Fragment#onPause()
 	 */
 	public static native void focusout();
 
 	/**
 	 * Used to access Godot global properties.
+	 * 
 	 * @param p_key Property key
 	 * @return String value of the property
 	 */
@@ -192,6 +212,7 @@ public class GodotLib {
 
 	/**
 	 * Used to access Godot's editor settings.
+	 * 
 	 * @param settingKey Setting key
 	 * @return String value of the setting
 	 */
@@ -199,15 +220,18 @@ public class GodotLib {
 
 	/**
 	 * Invoke method |p_method| on the Godot object specified by |p_id|
-	 * @param p_id Id of the Godot object to invoke
+	 * 
+	 * @param p_id     Id of the Godot object to invoke
 	 * @param p_method Name of the method to invoke
 	 * @param p_params Parameters to use for method invocation
 	 */
 	public static native void callobject(long p_id, String p_method, Object[] p_params);
 
 	/**
-	 * Invoke method |p_method| on the Godot object specified by |p_id| during idle time.
-	 * @param p_id Id of the Godot object to invoke
+	 * Invoke method |p_method| on the Godot object specified by |p_id| during idle
+	 * time.
+	 * 
+	 * @param p_id     Id of the Godot object to invoke
 	 * @param p_method Name of the method to invoke
 	 * @param p_params Parameters to use for method invocation
 	 */
@@ -215,9 +239,10 @@ public class GodotLib {
 
 	/**
 	 * Forward the results from a permission request.
+	 * 
 	 * @see Activity#onRequestPermissionsResult(int, String[], int[])
 	 * @param p_permission Request permission
-	 * @param p_result True if the permission was granted, false otherwise
+	 * @param p_result     True if the permission was granted, false otherwise
 	 */
 	public static native void requestPermissionResult(String p_permission, boolean p_result);
 
@@ -228,12 +253,14 @@ public class GodotLib {
 
 	/**
 	 * Invoked on the GL thread when the {@link GodotRenderer} has been resumed.
+	 * 
 	 * @see GodotRenderer#onActivityResumed()
 	 */
 	public static native void onRendererResumed();
 
 	/**
 	 * Invoked on the GL thread when the {@link GodotRenderer} has been paused.
+	 * 
 	 * @see GodotRenderer#onActivityPaused()
 	 */
 	public static native void onRendererPaused();

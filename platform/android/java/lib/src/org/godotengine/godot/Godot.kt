@@ -318,17 +318,20 @@ class Godot(private val context: Context) : SensorEventListener {
 			commandLine.add(expansionPackPath)
 		}
 		val activity = requireActivity()
+		val externalAssetManager = ExternalAssetManager()
 		if (!nativeLayerInitializeCompleted) {
+			Log.d(TAG, "Initializing native layer")
 			nativeLayerInitializeCompleted = GodotLib.initialize(
 					activity,
 					this,
-					activity.assets,
+					externalAssetManager,
 					io,
 					netUtils,
 					directoryAccessHandler,
 					fileAccessHandler,
 					useApkExpansion,
 			)
+			Log.d(TAG, "Native layer initialization completed: $nativeLayerInitializeCompleted")
 		}
 
 		if (nativeLayerInitializeCompleted && !nativeLayerSetupCompleted) {

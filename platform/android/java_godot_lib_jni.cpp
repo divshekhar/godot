@@ -35,6 +35,7 @@
 #include "api/jni_singleton.h"
 #include "dir_access_jandroid.h"
 #include "display_server_android.h"
+#include "external_asset_manager.h"
 #include "file_access_android.h"
 #include "file_access_filesystem_jandroid.h"
 #include "java_godot_io_wrapper.h"
@@ -55,7 +56,7 @@
 #include "editor/editor_settings.h"
 #endif
 
-// TODO:Android Remove AssetManager
+// Android Removed AssetManager
 #include <android/asset_manager_jni.h>
 #include <android/input.h>
 #include <android/native_window_jni.h>
@@ -116,7 +117,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setVirtualKeyboardHei
 	}
 }
 
-JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jclass clazz, jobject p_activity, jobject p_godot_instance, jobject p_asset_manager, jobject p_godot_io, jobject p_net_utils, jobject p_directory_access_handler, jobject p_file_access_handler, jboolean p_use_apk_expansion) {
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jclass clazz, jobject p_activity, jobject p_godot_instance, jobject ext_asset_manager, jobject p_godot_io, jobject p_net_utils, jobject p_directory_access_handler, jobject p_file_access_handler, jboolean p_use_apk_expansion) {
 	JavaVM *jvm;
 	env->GetJavaVM(&jvm);
 
@@ -126,11 +127,18 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv
 
 	init_thread_jandroid(jvm, env);
 
-	// TODO:Android Remove AssetManager
-	jobject amgr = env->NewGlobalRef(p_asset_manager);
+	// Android Removed AssetManager
+	jobject amgr = env->NewGlobalRef(ext_asset_manager);
 
-	// TODO:Android Remove AssetManager
-	FileAccessAndroid::asset_manager = AAssetManager_fromJava(env, amgr);
+	// Android Removed AssetManager
+	// FileAccessAndroid::asset_manager = AAssetManager_fromJava(env, amgr);
+	// FileAccessAndroid::asset_manager = AExternalAssetManager_fromJava(env, amgr);
+	AExternalAssetManager *external_asset_manager = AExternalAssetManager_fromJava(env, amgr);
+
+	// Call a method from ext_asset_manager from java
+	jclass ext_asset_manager_class = env->GetObjectClass(ext_asset_manager);
+	jmethodID method_id = env->GetMethodID(ext_asset_manager_class, "hello", "()");
+	env->CallObjectMethod(ext_asset_manager, method_id);
 
 	DirAccessJAndroid::setup(p_directory_access_handler);
 	FileAccessFilesystemJAndroid::setup(p_file_access_handler);
