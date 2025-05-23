@@ -126,11 +126,12 @@
 #include "editor/plugins/tiles/tiles_editor_plugin.h"
 #include "editor/plugins/tool_button_editor_plugin.h"
 #include "editor/plugins/voxel_gi_editor_plugin.h"
-#include "editor/register_exporters.h"
 #ifndef DISABLE_DEPRECATED
 #include "editor/plugins/parallax_background_editor_plugin.h"
 #include "editor/plugins/skeleton_ik_3d_editor_plugin.h"
 #endif
+#include "editor/register_exporters.h"
+#include "plugins/editor_ai_plugin.h"
 
 void register_editor_types() {
 	OS::get_singleton()->benchmark_begin_measure("Editor", "Register Types");
@@ -295,6 +296,8 @@ void register_editor_types() {
 
 	GLOBAL_DEF("editor/version_control/plugin_name", "");
 	GLOBAL_DEF("editor/version_control/autoload_on_startup", false);
+
+	EditorPlugins::add_by_type<EditorAIPlugin>();
 
 	EditorInterface::create();
 	Engine::Singleton ei_singleton = Engine::Singleton("EditorInterface", EditorInterface::get_singleton());
