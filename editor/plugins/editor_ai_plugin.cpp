@@ -1,17 +1,24 @@
 #include "editor_ai_plugin.h"
-#include "core/config/project_settings.h"
-#include "core/input/shortcut.h"
-#include "editor/editor_command_palette.h"
-#include "editor/editor_dock_manager.h"
-#include "editor/editor_node.h"
-#include "editor/editor_settings.h"
-#include "editor/editor_string_names.h"
-#include "editor/themes/editor_scale.h"
-#include "scene/gui/label.h"
-#include "scene/gui/margin_container.h"
+#include "../../core/config/project_settings.h"
+#include "../../core/input/shortcut.h"
+#include "../../scene/gui/label.h"
+#include "../../scene/gui/margin_container.h"
+#include "../../scene/main/node.h"
+#include "../../scene/main/scene_tree.h"
+#include "../../scene/resources/packed_scene.h"
+#include "../editor_command_palette.h"
+#include "../editor_dock_manager.h"
+#include "../editor_node.h"
+#include "../editor_settings.h"
+#include "../editor_string_names.h"
+#include "../themes/editor_scale.h"
 
 void EditorAIPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_on_submit_pressed"), &EditorAIPlugin::_on_submit_pressed);
+	ClassDB::bind_method(D_METHOD("_create_new_scene"), &EditorAIPlugin::_create_new_scene);
+	ClassDB::bind_method(D_METHOD("_add_node_to_scene", "type", "name"), &EditorAIPlugin::_add_node_to_scene);
+	ClassDB::bind_method(D_METHOD("_set_node_property", "node", "property", "value"), &EditorAIPlugin::_set_node_property);
+	ClassDB::bind_method(D_METHOD("_save_current_scene"), &EditorAIPlugin::_save_current_scene);
 }
 
 const Ref<Texture2D> EditorAIPlugin::get_plugin_icon() const {
@@ -100,6 +107,9 @@ EditorAIPlugin::EditorAIPlugin() {
 	submit_button->connect("pressed", callable_mp(this, &EditorAIPlugin::_on_submit_pressed));
 	button_hbox->add_child(submit_button);
 
+	// Initialize editor interface
+	editor_interface = EditorInterface::get_singleton();
+
 	// Add the dock to the editor
 	EditorDockManager::get_singleton()->add_dock(main_container, TTRC("AI Assistant"), EditorDockManager::DOCK_SLOT_RIGHT_UL, ED_SHORTCUT_AND_COMMAND("docks/open_ai_assistant", TTRC("Open AI Assistant Dock")), "Node");
 }
@@ -117,14 +127,96 @@ void EditorAIPlugin::make_visible(bool p_visible) {
 }
 
 void EditorAIPlugin::_on_submit_pressed() {
-	String prompt = prompt_input->get_text();
+	String prompt = prompt_input->get_line(0); // Get first line of text
 	if (!prompt.is_empty()) {
 		_process_ai_request(prompt);
+		prompt_input->clear(); // Clear the input after processing
 	}
 }
 
-void EditorAIPlugin::_process_ai_request(const String &prompt) {
-	// TODO: Implement AI request processing
-	// For now, just echo the prompt
-	response_output->set_text("Processing prompt: " + prompt + "\n\nThis is a placeholder response. The AI integration will be implemented here.");
+void EditorAIPlugin::_process_ai_request(const String &p_prompt) {
+	if (!editor_interface) {
+		editor_interface = EditorInterface::get_singleton();
+		if (!editor_interface) {
+			response_output->set_text("Error: Could not access editor interface");
+			return;
+		}
+	}
+
+	String prompt = p_prompt.to_lower();
+	String response;
+
+	if (prompt.contains("create") && prompt.contains("scene")) {
+		_create_new_scene();
+		response = "Created a new scene.";
+	} else if (prompt.contains("add") && prompt.contains("node")) {
+		_add_node_to_scene("Node2D", "MyNode");
+		response = "Added a Node2D node named 'MyNode' to the scene.";
+	} else if (prompt.contains("save")) {
+		_save_current_scene();
+		response = "Saved the current scene.";
+	} else {
+		response = "I understand you want to: " + p_prompt + "\n\nThis functionality will be implemented in the AI integration phase.";
+	}
+
+	response_output->set_text(response);
+}
+
+void EditorAIPlugin::_create_new_scene() {
+	if (!editor_interface) {
+		editor_interface = EditorInterface::get_singleton();
+	}
+
+	// Create a new empty scene with a root node
+	Node *root = memnew(Node);
+	root->set_name("Scene");
+
+	// Set it as the active scene
+	if (editor_interface->get_edited_scene_root()) {
+		editor_interface->get_edited_scene_root()->queue_free(); // Clear existing scene if any
+	}
+	EditorNode::get_singleton()->set_edited_scene(root); // Set new scene
+	current_scene = root;
+}
+
+void EditorAIPlugin::_add_node_to_scene(const String &p_type, const String &p_name) {
+	if (!editor_interface) {
+		editor_interface = EditorInterface::get_singleton();
+	}
+
+	if (!current_scene) {
+		current_scene = editor_interface->get_edited_scene_root();
+		if (!current_scene) {
+			_create_new_scene();
+		}
+	}
+
+	// Create the new node
+	Node *new_node = Object::cast_to<Node>(ClassDB::instantiate(p_type));
+	if (!new_node) {
+		response_output->set_text("Failed to create node of type: " + p_type);
+		return;
+	}
+
+	new_node->set_name(p_name);
+	current_scene->add_child(new_node);
+	new_node->set_owner(current_scene);
+}
+
+void EditorAIPlugin::_set_node_property(Node *p_node, const String &p_property, const Variant &p_value) {
+	if (!p_node) {
+		return;
+	}
+
+	p_node->set(p_property, p_value);
+}
+
+void EditorAIPlugin::_save_current_scene() {
+	if (!editor_interface) {
+		editor_interface = EditorInterface::get_singleton();
+	}
+
+	if (editor_interface->get_edited_scene_root()) {
+		editor_interface->save_scene();
+	}
 }
